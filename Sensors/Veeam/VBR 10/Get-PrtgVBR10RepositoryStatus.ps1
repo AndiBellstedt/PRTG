@@ -1,23 +1,35 @@
 ﻿<#
     .SYNOPSIS
         PRTG Veeam Advanced Sensor
- 
+
     .DESCRIPTION
         Advanced Sensor will Report Statistics about Backups during last 24 Hours and Actual Repository usage.
- 
+
     .PARAMETER PSRemote
         Switch to use PSRemoting instead of locally installed VeeamPSSnapin.
         Use "Get-Help about_remote_requirements" for more information
- 
+
     .EXAMPLE
         PRTG-VeeamBRStats.ps1 -BRHost veeam01.lan.local
- 
- #>
+
+    .Notes
+        NAME:  PRTG-VeeamBRStats.ps1
+        Author: Andreas Bellstedt
+        LASTEDIT: 2022/11/26
+        VERSION:  1.0.1
+        KEYWORDS: PRTG, Veeam, VBR
+
+    .LINK
+        https://github.com/AndiBellstedt/PRTG
+#>
 #Requires -Version 3
-[cmdletbinding()]
+[cmdletbinding(
+    ConfirmImpact = "Low",
+    PositionalBinding = $true
+)]
 param(
     [string]
-    $BRHost = "localhost",
+    $BRHost = (.{ if ($env:prtg_host) { $env:prtg_host } else { $env:COMPUTERNAME } }),
 
     [int]
     $MinErrorInGB = 50,
@@ -32,8 +44,9 @@ param(
     $DebugConsoleOutput
 )
 
-#region Variables and Prereqs
 
+
+#region Variables and Prereqs
 # Set error handling
 trap {
     # Catch all unhadled errors and close Pssession to avoid this issue:
@@ -41,10 +54,6 @@ trap {
     # http://www.checkyourlogs.net/?p=54583
 
     if ($RemoteSession) { Remove-PSSession -Session $RemoteSession }
-    
-    # write error for debugging purpose
-    Write-Error $_.ToString()
-    Write-Error $_.ScriptStackTrace
 
     # build PRTG result object with error output
     "<prtg>"
@@ -52,7 +61,7 @@ trap {
     " <text>$($_.ToString())</text>"
     "</prtg>"
 
-    Exit
+    exit 1
 }
 
 # Start Load VEEAM Snapin (in local or remote session)
@@ -100,9 +109,8 @@ if ($OpenConnection -eq $BRHost) {
 if (-not (Get-VBRServerSession).Server ) {
     Throw "Failed to connect to Veeam BR Host '$BRHost' with user '$env:USERNAME'"
 }
-
-
 #endregion Variables and Prereqs
+
 
 
 #region Functions
@@ -222,8 +230,8 @@ function Set-PrtgResult {
 
     $Result
 }
-
 #endregion
+
 
 
 #region Main script
@@ -235,13 +243,13 @@ $VBRBackupRepository = Invoke-Command -Session $RemoteSession -ScriptBlock { (Ge
 
 # channel for freespace bytes
 foreach ($item in $VBRBackupRepository) {
-    Set-PrtgResult -Channel "$($item.Name) ($($item.Type)) Free" -Value $item.CachedFreeSpace -Unit BytesDisk -VolumeSize Giga -ShowChart -MinError ($MinErrorInGB * 1GB) -ErrorMsg "Diskspace is getting low on repo $($item.Name)" #-MaxWarn -MinWarn -MaxError -WarnMsg 
+    Set-PrtgResult -Channel "$($item.Name) ($($item.Type)) Free" -Value $item.CachedFreeSpace -Unit BytesDisk -VolumeSize Giga -ShowChart -MinError ($MinErrorInGB * 1GB) -ErrorMsg "Diskspace is getting low on repo $($item.Name)" #-MaxWarn -MinWarn -MaxError -WarnMsg
     Set-PrtgResult -Channel "$($item.Name) ($($item.Type)) Total" -Value $item.CachedTotalSpace -Unit BytesDisk -VolumeSize Giga
 }
 # channel for freespace percent
 foreach ($item in $VBRBackupRepository) {
     $percent = [math]::Round( ($item.CachedFreeSpace / $item.CachedTotalSpace * 100), 0)
-    Set-PrtgResult -Channel "$($item.Name) ($($item.Type)) % free" -Value $percent -Unit Percent -ShowChart -MinError $MinFreePrct -ErrorMsg "Freespace % is getting low on repo $($item.Name)" #-MaxWarn -MinWarn -MaxError -WarnMsg 
+    Set-PrtgResult -Channel "$($item.Name) ($($item.Type)) % free" -Value $percent -Unit Percent -ShowChart -MinError $MinFreePrct -ErrorMsg "Freespace % is getting low on repo $($item.Name)" #-MaxWarn -MinWarn -MaxError -WarnMsg
 }
 
 "</prtg>"

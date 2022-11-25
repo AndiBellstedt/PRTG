@@ -1,71 +1,65 @@
 ﻿<#
-        .SYNOPSIS
+    .SYNOPSIS
         PRTG Veeam Advanced Sensor
- 
-        .DESCRIPTION
+
+    .DESCRIPTION
         Advanced Sensor will Report Statistics about Backups during last 24 Hours and Actual Repository usage.
- 
-        .PARAMETER PSRemote
+
+    .PARAMETER PSRemote
         Switch to use PSRemoting instead of locally installed VeeamPSSnapin.
         Use "Get-Help about_remote_requirements" for more information
- 
-        .EXAMPLE
+
+    .EXAMPLE
         PRTG-VeeamBRStats.ps1 -BRHost veeam01.lan.local
- 
-        .EXAMPLE
+
+    .EXAMPLE
         PRTG-VeeamBRStats.ps1 -BRHost veeam01.lan.local -reportmode "Monthly" -repoCritical 80 -repoWarn 70 -Debug
- 
-        .EXAMPLE
+
+    .EXAMPLE
         PRTG-VeeamBRStats.ps1 -BRHost veeam01.lan.local -reportmode "Monthly" -repoCritical 80 -repoWarn 70 -selChann "BR"
- 
 
-        .Notes
+    .Notes
         NAME:  PRTG-VeeamBRStats.ps1
-        LASTEDIT: 02/08/2018
-
-        VERSION: 1.8
-
-        KEYWORDS: Veeam, PRTG
+        Author: Andreas Bellstedt
+        LASTEDIT: 2022/11/26
+        VERSION:  1.8.1
+        KEYWORDS: PRTG, Veeam, VBR
 
         CREDITS:
+            Thanks to Shawn, for creating an awsome Reporting Script:
+            http://blog.smasterson.com/2016/02/16/veeam-v9-my-veeam-report-v9-0-1/
 
-        Thanks to Shawn, for creating an awsome Reporting Script:
+            Thanks to Bernd Leinfelder for the Scalout Repository part!
+            https://github.com/berndleinfelder
 
-        http://blog.smasterson.com/2016/02/16/veeam-v9-my-veeam-report-v9-0-1/
+            Thanks to Guy Zuercher for the Endpoint Backup part and a lot of other enhancmeents!
+            https://github.com/gzuercher
 
- 
-
-        Thanks to Bernd Leinfelder for the Scalout Repository part!
-
-        https://github.com/berndleinfelder
-
- 
-
-        Thanks to Guy Zuercher for the Endpoint Backup part and a lot of other enhancmeents!
-
-        https://github.com/gzuercher
-
- #>
+    .LINK
+        https://github.com/AndiBellstedt/PRTG
+#>
 #Requires -Version 3
-[cmdletbinding()]
+[cmdletbinding(
+    ConfirmImpact = "Low",
+    PositionalBinding = $true
+)]
 param(
+    [Alias("Server")]
     [string]
-    $BRHost = "localhost",
+    $BRHost = (.{ if ($env:prtg_host) { $env:prtg_host } else { $env:COMPUTERNAME } }),
 
     [string]
-    $valueLookup = "",
+    $valueLookup = "veeam.job.status",
 
     [switch]
     $PSRemote
 )
 
- 
+
 
 #region Variables and Prereqs
-
-
 # Disable output of warning to prevent Veeam PS quirks
-#$WarningPreference = "SilentlyContinue"
+$WarningPreference = "SilentlyContinue"
 
 # Set error handling
 trap {
@@ -75,7 +69,7 @@ trap {
 
     #Disconnect-VBRServer -ErrorAction SilentlyContinue
     if ($RemoteSession) { Remove-PSSession -Session $RemoteSession }
-    
+
     #Write-Error $_.ToString()
     #Write-Error $_.ScriptStackTrace
 
@@ -84,10 +78,8 @@ trap {
     Write-Output " <text>$($_.ToString())</text>"
     Write-Output "</prtg>"
 
-    Exit
+    exit 1
 }
-
- 
 
 # Start Load VEEAM Snapin (in local or remote session)
 if ($PSRemote) {
@@ -134,22 +126,19 @@ $NewConnection = (Get-VBRServerSession).Server
 if ($null -eq $NewConnection) {
     Throw "Failed to connect to Veeam BR Host '$BRHost' with user '$env:USERNAME'"
 }
-
-
 #endregion Variables and Prereqs
 
- 
+
 
 #region Functions
 
 #endregion
 
- 
+
 
 #region Main script
-
 # query jobs
-$VBRJobs = Invoke-Command -Session $RemoteSession -ScriptBlock { Get-VBRJob | select-object *, @{n="JobStatus"; e={ $_.GetLastResult()}} }
+$VBRJobs = Invoke-Command -Session $RemoteSession -ScriptBlock { Get-VBRJob | select-object *, @{n = "JobStatus"; e = { $_.GetLastResult() } } }
 $VBRTapeJobs = Get-VBRTapeJob
 
 # build PRTG result
@@ -172,7 +161,7 @@ foreach ($VBRJob in $VBRJobs) {
 }
 
 foreach ($VBRTapeJob in $VBRTapeJobs) {
-    switch ($VBRTapeJob.LastResult){
+    switch ($VBRTapeJob.LastResult) {
         'Success' { $JobStatusValue = 4 }
         'None' { $JobStatusValue = 3 }    # aka "running" or "never runs"
         'Warning' { $JobStatusValue = 2 }
@@ -191,13 +180,4 @@ foreach ($VBRTapeJob in $VBRTapeJobs) {
 
 # kill remoting session
 if ($RemoteSession) { Remove-PSSession -Session $RemoteSession }
-
-#endregion
-
-
-
-#region Debug output
-if ($DebugOutput) {
-}
-
 #endregion

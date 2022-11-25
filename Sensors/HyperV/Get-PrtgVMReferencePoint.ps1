@@ -1,51 +1,60 @@
 ﻿<#
-.SYNOPSIS
-    PRTG HyperV Advanced Sensor
+    .SYNOPSIS
+        PRTG HyperV Advanced Sensor
 
-.DESCRIPTION
-    Advanced Sensor will Report information about amount of HyperV VM reference points
-    High amount of reference points leeds into slow starting VMs an management overhead on the hypervisor
+    .DESCRIPTION
+        Advanced Sensor will Report information about amount of HyperV VM reference points
+        High amount of reference points leeds into slow starting VMs an management overhead on the hypervisor
 
-.PARAMETER ComputerName
-    The HyperV host to query for virtual machines.
+    .PARAMETER ComputerName
+        The HyperV host to query for virtual machines.
 
-.PARAMETER VMName
-    The virtual machine name to query. Basicly this is a filter, so wildcards are supportet.
-    Defaul value is "*"
+    .PARAMETER VMName
+        The virtual machine name to query. Basicly this is a filter, so wildcards are supportet.
+        Defaul value is "*"
 
-.PARAMETER MaxWarning
-    Limit when PRTG report a channel in warning state. (yellow message)
+    .PARAMETER MaxWarning
+        Limit when PRTG report a channel in warning state. (yellow message)
 
-.PARAMETER MaxError
-    Limit when PRTG report a channel in error state. (red alert)
+    .PARAMETER MaxError
+        Limit when PRTG report a channel in error state. (red alert)
 
-.EXAMPLE
-    PS C:\> .\Get-VMReferencePoint.ps1 -ComputerName "HV01" -VMName *
+    .EXAMPLE
+        PS C:\> .\Get-VMReferencePoint.ps1 -ComputerName "HV01" -VMName *
 
-    Reports amount of reference poitns for all VMs on host "HV01" with defaul warning and error values
+        Reports amount of reference poitns for all VMs on host "HV01" with defaul warning and error values
 
-.EXAMPLE
-    PS C:\> .\Get-VMReferencePoint.ps1 -ComputerName "HV01" -VMName "VM01" -MaxWarning "30" -MaxError "100"
+    .EXAMPLE
+        PS C:\> .\Get-VMReferencePoint.ps1 -ComputerName "HV01" -VMName "VM01" -MaxWarning "30" -MaxError "100"
 
-    Reports amount of reference poitns for all VMs on host "HV01" with customized warn and error limits
+        Reports amount of reference poitns for all VMs on host "HV01" with customized warn and error limits
 
-.NOTES
-    Author:  Andreas Bellstedt
-    Version: 1.0
-    Contact: andreas.bellstedt@live.de
+    .NOTES
+        Get-PrtgVMReferencePoint
+        Author:  Andreas Bellstedt
+        LASTEDIT: 2022/11/25
+        VERSION: 1.0.1
+        KEYWORDS: PRTG, HyperV, HV
 
-    Derived from microsoft script found in Veeam Knowledgebase
-    https://forums.veeam.com/microsoft-hyper-v-f25/guest-os-starting-up-is-very-slow-on-hyper-v-2016-t50984.html
+        Derived from microsoft script found in Veeam Knowledgebase
+        https://forums.veeam.com/microsoft-hyper-v-f25/guest-os-starting-up-is-very-slow-on-hyper-v-2016-t50984.html
 
-    additional references:
-    https://docs.microsoft.com/de-de/archive/blogs/taylorb/teched-europe-windows-vnext-hyper-v-backup-and-restore-powershell-scripts
-    https://community.spiceworks.com/topic/2215842-hyper-v-live-migration-fails
+        additional references:
+        https://docs.microsoft.com/de-de/archive/blogs/taylorb/teched-europe-windows-vnext-hyper-v-backup-and-restore-powershell-scripts
+        https://community.spiceworks.com/topic/2215842-hyper-v-live-migration-fails
+
+    .LINK
+        https://github.com/AndiBellstedt/PRTG
 #>
-[CmdletBinding()]
+#Requires -Version 3
+[CmdletBinding(
+    ConfirmImpact = "Low",
+    PositionalBinding = $true
+)]
 param(
     [string]
     [Alias("Hostname", "Server", "Computer", "ServerName", "Host")]
-    $ComputerName = "ohvh03",
+    $ComputerName = (.{ if ($env:prtg_host) { $env:prtg_host } else { $env:COMPUTERNAME } }),
 
     [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
     [string]
@@ -116,17 +125,13 @@ trap {
     # Thanks for https://github.com/klmj for the idea
     # http://www.checkyourlogs.net/?p=54583
 
-    # write error for debugging purpose
-    Write-Error $_.ToString()
-    Write-Error $_.ScriptStackTrace
-
     # build PRTG result object with error output
     "<prtg>"
     " <error>1</error>"
     " <text>$($_.ToString())</text>"
     "</prtg>"
 
-    throw
+    exit 1
 }
 
 # XML channel output for PRTG
@@ -246,7 +251,6 @@ function Set-PrtgResult {
 
     $Result
 }
-
 #endregion helper functions
 
 

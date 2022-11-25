@@ -43,35 +43,36 @@
         Use "Get-Help about_remote_requirements" for more information
 
     .EXAMPLE
-        PS C:\> Get-PRTGVBR11RepositoryStatus.ps1 -ComputerName VBR01.corp.customer.com
+        PS C:\> Get-PrtgVBR11RepositoryStatus.ps1 -ComputerName VBR01.corp.customer.com
 
         Get all repositories from server 'VBR01.corp.customer.com'
         This methods require Veeam Management console / PowerShell module installed locally on the probe system
 
     .EXAMPLE
-        PS C:\> Get-PRTGVBR11RepositoryStatus.ps1 -ComputerName VBR01.corp.customer.com -PSRemote
+        PS C:\> Get-PrtgVBR11RepositoryStatus.ps1 -ComputerName VBR01.corp.customer.com -PSRemote
 
         Get all repositories from server 'VBR01.corp.customer.com' with the use of PSRemoting. This one query Veeam information "locally".
         This one can execute, without installed Veeam Management console / PowerShell module on the probe system
 
     .EXAMPLE
-        PS C:\> Get-PRTGVBR11RepositoryStatus.ps1 -ComputerName VBR01.corp.customer.com -Filter *Local* -PSRemote
+        PS C:\> Get-PrtgVBR11RepositoryStatus.ps1 -ComputerName VBR01.corp.customer.com -Filter *Local* -PSRemote
 
         Get only repositories where 'Local' is in the RepoName. Infomation will be queried from server 'VBR01.corp.customer.com' through PSRemoting.
         This one can execute, without installed Veeam Management console / PowerShell module on the probe system
 
     .Notes
-        Get-PRTGVBR11RepositoryStatus
+        Get-PrtgVBR11RepositoryStatus
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/11/20
-        VERSION: 1.2.1
-        KEYWORDS: Veeam, PRTG
+        LASTEDIT: 2022/11/26
+        VERSION: 1.2.2
+        KEYWORDS: PRTG, Veeam, VBR
 
     .LINK
-        https://github.com/AndiBellstedt
+        https://github.com/AndiBellstedt/PRTG
 #>
 #Requires -Version 3
 [cmdletbinding(
+    ConfirmImpact = "Low",
     PositionalBinding = $false
 )]
 param(
@@ -114,9 +115,6 @@ trap {
 
     #Disconnect-VBRServer -ErrorAction SilentlyContinue
     if ($RemoteSession) { Remove-PSSession -Session $RemoteSession }
-
-    #Write-Error $_.ToString()
-    #Write-Error $_.ScriptStackTrace
 
     Write-Output "<prtg>"
     Write-Output " <error>1</error>"
@@ -369,7 +367,6 @@ if ($Exclude -and $repos) {
 
 # Output result to PRTG
 "<prtg>"
-
 # channel for freespace bytes - usual backup repository
 foreach ($item in $repos) {
     Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) Free" -Value ([math]::round(($item.CachedFreeSpace / 1GB), 1)) -Unit GB -Float $true -ShowChart -ShowTable -MinError $MinErrorInGB -ErrorMsg "Diskspace is getting low on repo $($item.Name)" #-MaxWarn -MinWarn -MaxError -WarnMsg
@@ -382,7 +379,6 @@ foreach ($item in $repos) {
     $percent = [math]::Round( ($item.CachedFreeSpace / $item.CachedTotalSpace * 100), 0)
     Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) % free" -Value $percent -Unit Percent -ShowChart -ShowTable -MinError $MinFreePrct -ErrorMsg "Freespace % is getting low on repo $($item.Name)" #-MaxWarn -MinWarn -MaxError -WarnMsg
 }
-
 "</prtg>"
 
 # kill remote sesssion

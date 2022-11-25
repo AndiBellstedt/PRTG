@@ -51,15 +51,18 @@
     .Notes
         Get-PRTGVBO6JobStatus
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/11/20
-        VERSION:  1.0.2
-        KEYWORDS: Veeam, PRTG
+        LASTEDIT: 2022/11/26
+        VERSION:  1.0.3
+        KEYWORDS: PRTG, Veeam, VBO, VBO365
 
     .LINK
-        https://github.com/AndiBellstedt
+        https://github.com/AndiBellstedt/PRTG
 #>
 #Requires -Version 3
-[cmdletbinding()]
+[cmdletbinding(
+    ConfirmImpact = "Low",
+    PositionalBinding = $true
+)]
 param(
     [Alias("Server")]
     [string]

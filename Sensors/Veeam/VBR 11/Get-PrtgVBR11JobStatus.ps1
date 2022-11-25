@@ -30,33 +30,32 @@
         Use "Get-Help about_remote_requirements" for more information
 
     .EXAMPLE
-        PS C:\> Get-VeeamJobStatus.ps1 -ComputerName VBR01.corp.customer.com
+        PS C:\> Get-PrtgVBR11JobStatus.ps1 -ComputerName VBR01.corp.customer.com
 
         Get all Jobs from server 'VBR01.corp.customer.com'
         This methods require Veeam Management console / PowerShell module installed locally on the probe system
 
     .EXAMPLE
-        PS C:\> Get-VeeamJobStatus.ps1 -ComputerName VBR01.corp.customer.com -PSRemote
+        PS C:\> Get-PrtgVBR11JobStatus.ps1 -ComputerName VBR01.corp.customer.com -PSRemote
 
         Get all Jobs from server 'VBR01.corp.customer.com' with the use of PSRemoting to server VBR01 and query Veeam information "locally".
         This one can execute, without installed Veeam Management console / PowerShell module on the probe system
 
     .EXAMPLE
-        PS C:\> Get-VeeamJobStatus.ps1 -ComputerName VBR01.corp.customer.com -Filter *Backup* -PSRemote
+        PS C:\> Get-PrtgVBR11JobStatus.ps1 -ComputerName VBR01.corp.customer.com -Filter *Backup* -PSRemote
 
         Get only Jobs where 'backup' is in the JobName from server 'VBR01.corp.customer.com' through PSRemoting.
         This one can execute, without installed Veeam Management console / PowerShell module on the probe system
 
     .Notes
-        Get-VeeamJobStatus
+        Get-PrtgVBR11JobStatus
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/11/20
-        VERSION: 1.1.2
-        KEYWORDS: Veeam, PRTG
-
+        LASTEDIT: 2022/11/26
+        VERSION: 1.1.3
+        KEYWORDS: PRTG, Veeam, VBR
 
         Derived from:
-            NAME:  PRTG-VeeamBRStats.ps1
+            NAME:  Get-PrtgVBR11JobStatus.ps1
             CREDITS:
             Thanks to Shawn, for creating an awsome Reporting Script:
             http://blog.smasterson.com/2016/02/16/veeam-v9-my-veeam-report-v9-0-1/
@@ -68,10 +67,13 @@
             https://github.com/gzuercher
 
     .LINK
-        https://github.com/AndiBellstedt
+        https://github.com/AndiBellstedt/PRTG
 #>
 #Requires -Version 3
-[cmdletbinding()]
+[cmdletbinding(
+    ConfirmImpact = "Low",
+    PositionalBinding = $true
+)]
 param(
     [Alias("BRHost")]
     [string]
@@ -106,9 +108,6 @@ trap {
 
     #Disconnect-VBRServer -ErrorAction SilentlyContinue
     if ($RemoteSession) { Remove-PSSession -Session $RemoteSession }
-
-    #Write-Error $_.ToString()
-    #Write-Error $_.ScriptStackTrace
 
     Write-Output "<prtg>"
     Write-Output " <error>1</error>"
