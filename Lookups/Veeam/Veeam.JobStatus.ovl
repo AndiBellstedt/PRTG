@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ValueLookup desiredValue="4" id="veeam.job.status" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="PaeValueLookup.xsd">
+    <Lookups>
+        <SingleInt state="Error" value="0">Unknown</SingleInt>
+        <SingleInt state="Error" value="1">Failed</SingleInt>
+        <SingleInt state="Warning" value="2">Warning</SingleInt>
+        <SingleInt state="Ok" value="3">Running</SingleInt>
+        <SingleInt state="Ok" value="4">Success</SingleInt>
+    </Lookups>
+</ValueLookup>
