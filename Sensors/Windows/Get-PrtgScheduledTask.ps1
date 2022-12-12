@@ -515,7 +515,7 @@ $AllScheduledTasks = get-ComputerScheduledTasks($ComputerName)
 # Execute if Connection was successful
 if ($Global:ConnectionSuccessfull) {
     Write-Log -LogText "$logScope $StatInfo Filtering out operatingsystem default tasks" -NoFileStatus
-    [array]$FilterScheduledTasks = $AllScheduledTasks | Where-Object { $_.Author -ne "Microsoft" -and $_.Author -ne "Microsoft Corporation" -and $_.taskname -notlike '\Microsoft\Windows\Time Zone\SynchronizeTimeZone' -and $_.taskname -notlike '\CreateExplorerShellUnelevatedTask' -and $_.taskname -notlike '\User_Feed_Synchronization-*' -and $_.Author -notlike "" -and $_.Enabled -eq $true -and $_.LastRunTime -notlike "" -and $_.LastResult -notlike "0x41301" -and $_.LastResult -notlike "0x41303" -and $_.LastResult -notlike "0x41325" -and $_.LastResult -notlike "0x80070420" -and $_.LastResult -notlike "0x420" -and $_.ActionType -notlike "COMhandler"}
+    [array]$FilterScheduledTasks = $AllScheduledTasks | Where-Object { $_.Author -ne "Microsoft" -and $_.Author -ne "Microsoft Corporation" -and $_.taskname -notlike '\Microsoft\Windows\Time Zone\SynchronizeTimeZone' -and $_.taskname -notlike '\CreateExplorerShellUnelevatedTask' -and $_.taskname -notlike '\User_Feed_Synchronization-*' -and $_.Author -notlike "" -and $_.Enabled -eq $true -and $_.LastRunTime -notlike "" -and $_.LastResult -notlike "0x41301" -and $_.LastResult -notlike "0x41303" -and $_.LastResult -notlike "0x41325" -and $_.LastResult -notlike "0x80070420" -and $_.LastResult -notlike "0x800710E0" -and $_.LastResult -notlike "0x420" -and $_.ActionType -notlike "COMhandler"}
     <#
         Filter out Microsoft-System-Tasks
         0 or 0x0: The operation completed successfully.
