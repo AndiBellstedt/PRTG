@@ -1,6 +1,6 @@
 ﻿<#
     .SYNOPSIS
-        PRTG Veeam Advanced Sensor - (Custom) Sensor deployment
+        PRTG Advanced Sensor - (Custom) Sensor deployment
 
     .DESCRIPTION
         This custom sensor will download a folder structure with files from Azure Storage Account into the local probe directory.
