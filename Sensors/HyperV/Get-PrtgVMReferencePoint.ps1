@@ -31,7 +31,7 @@
 
     .NOTES
         Get-PrtgVMReferencePoint
-        Author:  Andreas Bellstedt
+        Author: Andreas Bellstedt
         LASTEDIT: 2022/11/25
         VERSION: 1.0.1
         KEYWORDS: PRTG, HyperV, HV
@@ -56,7 +56,7 @@ param(
     [Alias("Hostname", "Server", "Computer", "ServerName", "Host")]
     $ComputerName = (.{ if ($env:prtg_host) { $env:prtg_host } else { $env:COMPUTERNAME } }),
 
-    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
     [string]
     [Alias("VM", "Name", "Filter")]
     $VMName = "*",
@@ -286,11 +286,11 @@ foreach ($vmItem in $vmCollection) {
     # Return channel for per VM with amount of ReferencePoints
     $param = @{
         "Channel" = $vmName.toUpper()
-        "Value" = $virtualSystemRefPoint.Count
-        "Unit" = "Count"
+        "Value"   = $virtualSystemRefPoint.Count
+        "Unit"    = "Count"
     }
-    if($MaxWarning) { $parm.add("MaxWarn", $MaxWarning)}
-    if($MaxError) {
+    if ($MaxWarning) { $parm.add("MaxWarn", $MaxWarning) }
+    if ($MaxError) {
         $param.add("MaxError", $MaxError)
         $param.add("ErrorMsg", "Potential slow VM start and problems livemigrate VMs. Check and cleanup reference points")
     }
@@ -305,4 +305,4 @@ $output += "</prtg>"
 # output result to shell
 $output
 
-#region main script
+#endregion main script

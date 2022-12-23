@@ -351,16 +351,16 @@ if ($Exclude -and $repos) {
 
 # storage amount channel
 foreach ($item in $repos) {
-    Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) Used" -Value ([math]::round(($item.UsedSpace / 1GB),1)) -Unit GB -Float $true -ShowTable
-    if($item.EnableSizeLimit) {
-        Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) Free" -Value ([math]::round(($item.FreeSpace / 1GB),1)) -Unit GB -Float $true -ShowChart -ShowTable -MinError $MinErrorInGB -ErrorMsg "Low freespace on repo $($item.Name)"
-        Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) Total" -Value ([math]::round(($item.Capacity / 1GB),1)) -Unit GB -Float $true
+    Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) Used" -Value ([math]::round(($item.UsedSpace / 1GB), 1)) -Unit GB -Float $true -ShowTable
+    if ($item.EnableSizeLimit) {
+        Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) Free" -Value ([math]::round(($item.FreeSpace / 1GB), 1)) -Unit GB -Float $true -ShowChart -ShowTable -MinError $MinErrorInGB -ErrorMsg "Low freespace on repo $($item.Name)"
+        Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) Total" -Value ([math]::round(($item.Capacity / 1GB), 1)) -Unit GB -Float $true
     }
 }
 
 # storage percent channel
 foreach ($item in $repos) {
-    if($item.EnableSizeLimit) {
+    if ($item.EnableSizeLimit) {
         $percent = [math]::Round( ($item.FreeSpace / $item.Capacity * 100), 0)
         Out-PrtgChannel -Channel "$($item.Name) ($($item.Type)) % free" -Value $percent -Unit Percent -ShowChart -ShowTable -MinError $MinFreePrct -ErrorMsg "Low freespace on repo $($item.Name)"
     }
@@ -372,3 +372,4 @@ foreach ($item in $repos) {
 Disconnect-VBOServer -ErrorAction Ignore
 if ($RemoteSession) { Remove-PSSession -Session $RemoteSession }
 #endregion
+

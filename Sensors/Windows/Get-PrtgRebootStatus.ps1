@@ -61,10 +61,12 @@ Param (
 )
 
 
+
 #Region VARIABLES
 [bool]$RebootNeeded = $false
 [String]$RebootText = ""
 #EndRegion VARIABLES
+
 
 
 #Region ScriptBlock
@@ -166,6 +168,7 @@ $scriptBlock = {
     } | Select-Object @SelectSplat
 }
 #EndRegion ScriptBlock
+
 
 
 #Region Script
