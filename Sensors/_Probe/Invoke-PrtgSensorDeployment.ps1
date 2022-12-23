@@ -48,8 +48,8 @@
     .Notes
         Invoke-PrtgSensorDeployment
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/11/25
-        VERSION: 1.0.0
+        LASTEDIT: 2022/12/23
+        VERSION: 1.0.1
         KEYWORDS: PRTG, ManagedServices
 
     .LINK
@@ -512,16 +512,21 @@ if ("EnableSensorSync" -in $features) {
 
         # Detect modified files
         [array]$filesToDownload += Compare-Object -ReferenceObject $filesBothSides -DifferenceObject ($filesLocal | Where-Object compare -in $filesBothSides.compare) -Property Hash -PassThru | Where-Object SideIndicator -like "<="
-        $msg = "$(Get-Date -Format s), $($filesToDownload.Count) Locally modified files: $([string]::Join(", ", $filesToDownload.name))"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
+        if ($filesToDownload) { $_name = [string]::Join(", ", $filesToDownload.name) } else { $_name = "" }
+        $msg = "$(Get-Date -Format s), $($filesToDownload.Count) Locally modified files: $($_name)"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
 
         # new files to download
-        [array]$filesToDownload += $fileCompare | Where-Object SideIndicator -like "<="
-        $msg = "$(Get-Date -Format s), $($fileCompare | Where-Object SideIndicator -like "<=" | Measure-Object | Select-Object -ExpandProperty count) new files in blob: $([string]::Join('', ($fileCompare | Where-Object SideIndicator -like "<=" | Select-Object -ExpandProperty Name)))"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
+        $_files = ""
+        $_files = $fileCompare | Where-Object SideIndicator -like "<="
+        [array]$filesToDownload += $_files
+        if ($_files) { $_name = [string]::Join(", ", $_files.name) } else { $_name = "" }
+        $msg = "$(Get-Date -Format s), $($fileCompare | Where-Object SideIndicator -like "<=" | Measure-Object | Select-Object -ExpandProperty count) new files in blob: $($_name)"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
 
         # download files
         $msg = "$(Get-Date -Format s), Going to download $($filesToDownload.count) files"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
         $filesDownloaded = $filesToDownload | Save-BlobItem -Path $Destination -SASToken $SASToken -Force -PassThru -Verbose
-        $msg = "$(Get-Date -Format s), $($filesDownloaded.count) files: $([string]::Join(", ", $filesDownloaded.Name))"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
+        if ($filesDownloaded) { $_name = [string]::Join(", ", $filesDownloaded.name) } else { $_name = "" }
+        $msg = "$(Get-Date -Format s), $($filesDownloaded.count) files: $($_name)"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
 
         # Output PRTG object
         $fileDiff = $filesInBlob.Count - $filesLocal.Count
@@ -553,3 +558,4 @@ if ("EnableSensorSync" -in $features) {
 
 $msg = "$(Get-Date -Format s), ***** Finish script"; Write-Verbose $msg; if ($LogFile) { $msg | Out-File }
 #endregion main script
+
