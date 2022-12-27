@@ -230,11 +230,11 @@ Import-PSSession -Session $exSession -CommandName "Set-AdServerSettings", "Get-M
 
 #region Main script
 
-# Query jobs
+# Query database
 Set-AdServerSettings -ViewEntireForest $true
 [array]$mailboxDatabase = Get-MailboxDatabase #| Select-Object name, Servername, LogFolderpath, LogFilePrefix
 
-# Filter Jobs
+# Filter database
 if ($Filter -and $mailboxDatabase) {
     $filterResult = ""
     $filterResult = foreach ($filterItem in $Filter) {
