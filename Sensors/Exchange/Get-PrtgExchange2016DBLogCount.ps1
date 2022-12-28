@@ -1,6 +1,6 @@
 ﻿<#
     .SYNOPSIS
-        PRTG Advanced Sensor - Exchange Server (Onpremises)
+        PRTG Advanced Sensor - Exchange Server (Onpremises) - Databsae logfile counter
 
     .DESCRIPTION
         Advanced Sensor will report amount of logfiles existing for a mailbox database as a channel in the sensor
@@ -27,26 +27,26 @@
         Use "Get-Help about_remote_requirements" for more information
 
     .EXAMPLE
-        PS C:\> Get-PrtgExchangeDBLogCount.ps1 -ComputerName ex01.corp.customer.com
+        PS C:\> Get-PrtgExchange2016DBLogCount.ps1 -ComputerName ex01.corp.customer.com
 
         Get all mailbox databases from server 'ex01.corp.customer.com' and report the number of existing logfiles
 
     .EXAMPLE
-        PS C:\> Get-PrtgExchangeDBLogCount.ps1 -ComputerName ex01.corp.customer.com -Database "DB01"
+        PS C:\> Get-PrtgExchange2016DBLogCount.ps1 -ComputerName ex01.corp.customer.com -Database "DB01"
 
         Get mailbox database "DB01" from server 'ex01.corp.customer.com' and report the number of existing logfiles
 
     .EXAMPLE
-        PS C:\> Get-PrtgExchangeDBLogCount.ps1 -ComputerName ex01.corp.customer.com -Filter "DB*" Credential $Cred
+        PS C:\> Get-PrtgExchange2016DBLogCount.ps1 -ComputerName ex01.corp.customer.com -Credential $Cred -Filter "DB*"
 
         Get mailbox databases with name "DB*" from server 'ex01.corp.customer.com' and report the number of existing logfiles
         Connection to exchange will be done with credentials '$Cred'.
 
     .Notes
-        Get-PrtgExchangeDBLogCount
+        Get-PrtgExchange2016DBLogCount
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/12/25
-        VERSION:  1.0.0
+        LASTEDIT: 2022/12/28
+        VERSION:  1.0.1
         KEYWORDS: PRTG, Exchange, OnPremise, database
 
     .LINK
