@@ -220,6 +220,8 @@ if ($deviceList) { [array]$groupDeviceType = $deviceList | Group-Object Devicety
 # Build PRTG result
 $result += "<prtg>"
 
+$result += Out-PrtgChannel -Channel "All devices" -Value ([Array]($groupDeviceType.group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart
+
 foreach ($deviceType in $groupDeviceType) {
     $result += Out-PrtgChannel -Channel $deviceType.Name -Value ([Array]($deviceType.group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart
 }
