@@ -30,8 +30,8 @@
     .Notes
         Get-PrtgExchange2016MobileDeviceStatus
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/12/27
-        VERSION:  1.0.0
+        LASTEDIT: 2022/12/28
+        VERSION:  1.0.1
         KEYWORDS: PRTG, Exchange, OnPremise, ActiveSync, MobileDevices
 
     .LINK
@@ -263,14 +263,14 @@ i($deviceList) {
 # Build PRTG result
 $result += "<prtg>"
 
-$result += Out-PrtgChannel -Channel "Enabled devices" -Value ([Array]($groupIsDisabled | where Name -like "False" | select -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable
-$result += Out-PrtgChannel -Channel "Disabled devices" -Value ([Array]($groupIsDisabled | where Name -like "true" | select -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable
+$result += Out-PrtgChannel -Channel "Enabled devices" -Value ([Array]($groupIsDisabled | Where-Object Name -like "False" | Select-Object -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable
+$result += Out-PrtgChannel -Channel "Disabled devices" -Value ([Array]($groupIsDisabled | Where-Object Name -like "true" | Select-Object -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable
 
-$result += Out-PrtgChannel -Channel "Devices AccessState: Allowed" -Value ([Array]($groupDeviceAccessState | where Name -like "Allowed" | select -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinWarn 0
-$result += Out-PrtgChannel -Channel "Devices AccessState: Blocked" -Value ([Array]($groupDeviceAccessState | where Name -like "Blocked" | select -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinWarn 1
-$result += Out-PrtgChannel -Channel "Devices AccessState: Quarantined" -Value ([Array]($groupDeviceAccessState | where Name -like "Quarantined" | select -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinWarn 1
-$result += Out-PrtgChannel -Channel "Devices AccessState: DeviceDiscovery" -Value ([Array]($groupDeviceAccessState | where Name -like "DeviceDiscovery" | select -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart
-$result += Out-PrtgChannel -Channel "Devices AccessState: Unknown" -Value ([Array]($groupDeviceAccessState | where Name -like "Unknown" | select -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinError 1
+$result += Out-PrtgChannel -Channel "Devices AccessState: Allowed" -Value ([Array]($groupDeviceAccessState | Where-Object Name -like "Allowed" | Select-Object -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinWarn 0
+$result += Out-PrtgChannel -Channel "Devices AccessState: Blocked" -Value ([Array]($groupDeviceAccessState | Where-Object Name -like "Blocked" | Select-Object -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinWarn 1
+$result += Out-PrtgChannel -Channel "Devices AccessState: Quarantined" -Value ([Array]($groupDeviceAccessState | Where-Object Name -like "Quarantined" | Select-Object -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinWarn 1
+$result += Out-PrtgChannel -Channel "Devices AccessState: DeviceDiscovery" -Value ([Array]($groupDeviceAccessState | Where-Object Name -like "DeviceDiscovery" | Select-Object -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart
+$result += Out-PrtgChannel -Channel "Devices AccessState: Unknown" -Value ([Array]($groupDeviceAccessState | Where-Object Name -like "Unknown" | Select-Object -ExpandProperty group)).Count -Mode Absolute -Unit Count -ShowTable -ShowChart -MinError 1
 
 foreach ($deviceAccessStateReason in $groupDeviceAccessStateReason) {
     $result += Out-PrtgChannel -Channel "Devices AccessState reason: $($deviceAccessStateReason.Name)" -Value ([Array]($deviceAccessStateReason.group)).Count -Mode Absolute -Unit Count -ShowTable
