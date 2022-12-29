@@ -13,7 +13,7 @@
         Name of Server
 
     .PARAMETER Credential
-        Credential to connect to remote system and/or Veeam B&R Service
+        Credential to connect to remote system
 
     .EXAMPLE
         PS C:\> Get-PrtgExchange2016MobileDeviceTypes.ps1 -ComputerName ex01.corp.customer.com
@@ -29,8 +29,8 @@
     .Notes
         Get-PrtgExchange2016MobileDeviceTypes
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/12/28
-        VERSION:  1.0.0
+        LASTEDIT: 2022/12/29
+        VERSION:  1.0.1
         KEYWORDS: PRTG, Exchange, OnPremise, ActiveSync, MobileDevices, DeviceTypes
 
     .LINK

@@ -24,7 +24,7 @@
         Name of prtg internal lookup value to translate "job status Id" in channel
 
     .PARAMETER Credential
-        Credential to connect to remote system and/or Veeam B&R Service
+        Credential to connect to remote system and/or Veeam VBO Service
 
     .PARAMETER PSRemote
         Switch to use PSRemoting instead of locally installed VeeamPSSnapin.
@@ -51,8 +51,8 @@
     .Notes
         Get-PRTGVBO6JobStatus
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/11/26
-        VERSION:  1.0.3
+        LASTEDIT: 2022/12/29
+        VERSION:  1.0.4
         KEYWORDS: PRTG, Veeam, VBO, VBO365
 
     .LINK
