@@ -23,21 +23,21 @@
         Credential to connect to remote system and/or Veeam B&R Service
 
     .EXAMPLE
-        PS C:\> Get-PrtgCertificates.ps1 -ComputerName srv01.corp.customer.com
+        PS C:\> Get-PrtgCertificateStatus.ps1 -ComputerName srv01.corp.customer.com
 
         Get all certificates from server 'srv01.corp.customer.com' and report every certificate expiring / explired
 
     .EXAMPLE
-        PS C:\> Get-PrtgCertificates.ps1 -ComputerName srv01.corp.customer.com -DaysToExpireWarning 40 -DaysToExpireError 30 -ExcludeCertificateThumb "010123234A4ABBCECEFF"
+        PS C:\> Get-PrtgCertificateStatus.ps1 -ComputerName srv01.corp.customer.com -DaysToExpireWarning 40 -DaysToExpireError 30 -ExcludeCertificateThumb "010123234A4ABBCECEFF"
 
         Get all certificates from server 'srv01.corp.customer.com' and report every certificate expiring / explired with customized warning and error limits
         Existing certificate with thumbprint "010123234A4ABBCECEFF" will be ignored in the query
 
     .NOTES
-        Get-PrtgCertificates
+        Get-PrtgCertificateStatus
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/12/29
-        VERSION:  1.0.0
+        LASTEDIT: 2023/01/01
+        VERSION:  1.0.1
         KEYWORDS: PRTG, Windows, Certificates
 
     .LINK
