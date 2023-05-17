@@ -48,8 +48,8 @@
     .Notes
         Invoke-PrtgSensorDeployment
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/12/23
-        VERSION: 1.0.1
+        LASTEDIT: 2023/05/15
+        VERSION: 1.0.2
         KEYWORDS: PRTG, ManagedServices
 
     .LINK
@@ -142,7 +142,7 @@ function Get-BlobChildItem {
     )
 
 
-    $sasTokenCredential = [pscredential]::new('token', $SASToken)
+    $sasTokenCredential = New-Object pscredential @('token', $SASToken)
     $_url = $StorageUrl.Scheme + "://" + $StorageUrl.Host + $StorageUrl.AbsolutePath + "?restype=container&comp=list&" + $($sasTokenCredential.GetNetworkCredential().Password)
     $response = Invoke-RestMethod -Uri $_url -Method Get
 
@@ -250,7 +250,7 @@ function Save-BlobItem {
     )
 
     begin {
-        $sasTokenCredential = [pscredential]::new('token', $SASToken)
+        $sasTokenCredential = New-Object pscredential @('token', $SASToken)
     }
 
     process {
