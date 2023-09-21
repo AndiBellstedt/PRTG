@@ -19,6 +19,9 @@
     .PARAMETER MaxError
         Limit when PRTG report a channel in error state. (red alert)
 
+    .PARAMETER Credential
+        Credential to connect to remote system and/or Veeam B&R Service
+
     .EXAMPLE
         PS C:\> .\Get-VMReferencePoint.ps1 -ComputerName "HV01" -VMName *
 
@@ -32,8 +35,8 @@
     .NOTES
         Get-PrtgVMReferencePoint
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/11/25
-        VERSION: 1.0.1
+        LASTEDIT: 2023/07/11
+        VERSION: 1.1.0
         KEYWORDS: PRTG, HyperV, HV
 
         Derived from microsoft script found in Veeam Knowledgebase
@@ -65,7 +68,10 @@ param(
     $MaxWarning,
 
     [int]
-    $MaxError = 30
+    $MaxError = 30,
+
+    [pscredential]
+    $Credential = (.{ if ($env:prtg_windowsuser -and $env:prtg_windowspassword) { [pscredential]::new( "$(if($env:prtg_windowsdomain){ "$($env:prtg_windowsdomain)\"})$($env:prtg_windowsuser)", $("$($env:prtg_windowspassword)" | ConvertTo-SecureString -AsPlainText -Force)) } })
 )
 
 
@@ -257,7 +263,12 @@ function Set-PrtgResult {
 
 #region main script
 # query VMs from HyperV host
-$vmCollection = Get-VM -ComputerName $ComputerName -Name $VMName | Sort-Object -Property Name
+$paramsGETVM = @{
+    "ComputerName" = $ComputerName
+    "Name"         = $VMName
+}
+if ($Credential) { $paramsGETVM.Add("Credential", $Credential) }
+$vmCollection = Get-VM @paramsGetVM | Sort-Object -Property Name
 Write-Verbose "$($vmCollection.count) VMs found on '$($ComputerName)'"
 
 # Start with output to PRTG as a xml result object
@@ -265,11 +276,18 @@ $output = "<prtg>"
 
 # loop trough VMs and build data channels
 foreach ($vmItem in $vmCollection) {
-    $vmName = $vmItem.Name
-    Write-Verbose "$(Get-Date -Format s) Query VM '$($vmName)'"
+    $_vmName = $vmItem.Name
+    Write-Verbose "$(Get-Date -Format s) Query VM '$($_vmName)'"
 
     # Retrieve an instance of the virtual machine computer system that contains reference points
-    $msvm_ComputerSystem = Get-WmiObject -ComputerName $ComputerName -Namespace "root\virtualization\v2" -Class "Msvm_ComputerSystem" -Filter "ElementName='$($vmName)'"
+    $paramsGetWMI = @{
+        "ComputerName" = $ComputerName
+        "Namespace"    = "root\virtualization\v2"
+        "Class"        = "Msvm_ComputerSystem"
+        "Filter"       = "ElementName='$($_vmName)'"
+    }
+    if ($Credential) { $paramsGetWMI.Add("Credential", $Credential) }
+    $msvm_ComputerSystem = Get-WmiObject @paramsGetWMI
 
     # Retrieve all refrence associations of the virtual machine
     $allrefPoints = $msvm_ComputerSystem.GetRelationships("Msvm_ReferencePointOfVirtualSystem")
@@ -285,7 +303,7 @@ foreach ($vmItem in $vmCollection) {
 
     # Return channel for per VM with amount of ReferencePoints
     $param = @{
-        "Channel" = $vmName.toUpper()
+        "Channel" = $_vmName.toUpper()
         "Value"   = $virtualSystemRefPoint.Count
         "Unit"    = "Count"
     }
@@ -296,7 +314,7 @@ foreach ($vmItem in $vmCollection) {
     }
 
     $output += Set-PrtgResult @param
-    Write-Verbose "$(Get-Date -Format s) Found $($virtualSystemRefPoint.Count) reference points for '$($vmName)'"
+    Write-Verbose "$(Get-Date -Format s) Found $($virtualSystemRefPoint.Count) reference points for '$($_vmName)'"
 }
 
 # close and finish prtg result object
