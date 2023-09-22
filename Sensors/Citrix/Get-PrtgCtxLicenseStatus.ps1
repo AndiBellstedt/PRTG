@@ -18,8 +18,8 @@
     .NOTES
         Get-PrtgCtxLicenseStatus
         Author: Andreas Bellstedt
-        LASTEDIT: 2022/12/13
-        VERSION: 1.0.2
+        LASTEDIT: 2023/09/22
+        VERSION: 1.1.0
         KEYWORDS: PRTG, Citrix, LicenseMonitoring
 
         derived from https://github.com/LockstepGroup/citrix-prtg/blob/master/Lockstep%20-%20Citrix%20Licensing%20Monitor.ps1
@@ -371,8 +371,8 @@ ping localhost -n 1 | Out-Null
 if (-not $ComputerName) {
     return @"
 <prtg>
-  <error>1</error>
-  <text>Required parameter not specified: please provide target hostname (or %host)</text>
+    <error>1</error>
+    <text>Required parameter not specified: please provide target hostname (or %host)</text>
 </prtg>
 "@
 }
@@ -383,8 +383,8 @@ $CheckServer = Get-TargetStatus $ComputerName
 if ($CheckServer -ne $true) {
     return @"
 <prtg>
-  <error>1</error>
-  <text>$CheckServer</text>
+    <error>1</error>
+    <text>$CheckServer</text>
 </prtg>
 "@
 }
@@ -392,6 +392,18 @@ if ($CheckServer -ne $true) {
 
 # query license status
 $LicensingData = Get-WmiObject -class "Citrix_GT_License_Pool" -Namespace "ROOT\CitrixLicensing" -ComputerName $ComputerName
+
+# Sum license objects
+$LicensingData = [pscustomobject]@{
+    "Count"           = (($LicensingData | Measure-Object -Sum count).Sum)
+    "InUseCount"      = (($LicensingData | Measure-Object -Sum InUseCount).Sum)
+    "PooledAvailable" = (($LicensingData | Measure-Object -Sum PooledAvailable).Sum)
+    "Overdraft"       = (($LicensingData | Measure-Object -Sum Overdraft).Sum)
+    "PLD"             = ($LicensingData[0].PLD)
+    "LicenseType"     = ($LicensingData[0].PLD)
+}
+
+# build percent values
 $LicensingData = $LicensingData | Select-Object Count, InUseCount, PooledAvailable, Overdraft, PLD, LicenseType, @{
     n = 'PercentAvailable';
     e = { [math]::round( (( $_.PooledAvailable / $_.Count ) * 100), 0) }
@@ -402,7 +414,10 @@ $LicensingData = $LicensingData | Select-Object Count, InUseCount, PooledAvailab
     n = 'ProductName';
     e = { ConvertFrom-PLD $_.PLD }
 }
+
+# Filter
 #$LicensingData = $LicensingData | Where-Object PLD -like "XDT_ENT_CCS"
+
 
 # query service state
 $Services = Get-Service $ServiceNames -ComputerName $ComputerName -ErrorAction SilentlyContinue
@@ -414,14 +429,14 @@ $XMLOutput += '<prtg>'
 
 foreach ($Service in $Services) {
     if ($Service.Status -ne "Running") { $State = 2 } else { $State = 1 }
-    $XmlOutput += Set-PrtgResult $("Service: " + $Service.DisplayName) $State state -me 1 -em "Service is not running" -ValueLookup "prtg.standardlookups.yesno.stateyesok"
+    $XmlOutput += Set-PrtgResult -Channel $("Service: " + $Service.DisplayName) -Value $State -Unit state -MaxError 1 -ErrorMsg "Service is not running" -ValueLookup "prtg.standardlookups.yesno.stateyesok"
 }
 
 foreach ($License in $LicensingData) {
-    $XMLOutput += Set-PrtgResult ("License: " + $License.ProductName + ": Percent In Use") $License.PercentInUse "Percent" -MaxWarn 90 -MaxError 100 -WarnMsg (($License.PercentInUse).toString() + "% of licenses allocated.") -ErrorMsg "No more licenses available." -ShowChart
-    $XMLOutput += Set-PrtgResult ("License: " + $License.ProductName + ": Percent Available") $License.PercentAvailable "Percent" #-MaxWarn 10 -MaxError 0 -WarnMsg (($License.PercentAvailable).toString() + "% of licenses available.") -ErrorMsg "No more licenses available." -ShowChart
-    $XMLOutput += Set-PrtgResult ("License: " + $License.ProductName + ": Available") $License.PooledAvailable "#"
-    $XMLOutput += Set-PrtgResult ("License: " + $License.ProductName + ": Total Installed") $License.Count "#"
+    $XMLOutput += Set-PrtgResult -Channel ("License: " + $License.ProductName + ": Percent In Use") -Value $License.PercentInUse -Unit "Percent" -MaxWarn 90 -MaxError 100 -WarnMsg (($License.PercentInUse).toString() + "% of licenses allocated.") -ErrorMsg "No more licenses available." -ShowChart
+    $XMLOutput += Set-PrtgResult -Channel ("License: " + $License.ProductName + ": Percent Available") -Value $License.PercentAvailable -Unit "Percent" #-MaxWarn 10 -MaxError 0 -WarnMsg (($License.PercentAvailable).toString() + "% of licenses available.") -ErrorMsg "No more licenses available." -ShowChart
+    $XMLOutput += Set-PrtgResult -Channel ("License: " + $License.ProductName + ": Available") -Value $License.PooledAvailable -Unit "#"
+    $XMLOutput += Set-PrtgResult -Channel ("License: " + $License.ProductName + ": Total Installed") -Value $License.Count -Unit "#"
 }
 
 $XMLOutput += "  <text>$ReturnText</text>"
